@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Casio SK-1 — Web Recreation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="bg-zinc-900 min-h-screen flex items-center justify-center p-4">
+  <div id="sk1" class="sk1-unit w-full max-w-4xl">
+
+    <!-- Header / branding -->
+    <header class="sk1-header flex items-center justify-between px-6 py-3">
+      <div>
+        <h1 class="text-lg font-bold tracking-widest text-zinc-100">CASIO</h1>
+        <p class="text-xs tracking-[0.3em] text-zinc-400">SK-1</p>
+      </div>
+      <div class="text-right text-xs text-zinc-500">
+        <span id="status-label">POWER OFF</span>
+      </div>
+    </header>
+
+    <!-- Power switch (audio context unlock) -->
+    <section class="sk1-panel px-6 py-4 flex items-center gap-6">
+      <label class="power-switch flex items-center gap-3 cursor-pointer select-none">
+        <span class="text-xs uppercase tracking-wider text-zinc-400">Power</span>
+        <div class="switch-track" id="power-track">
+          <input type="checkbox" id="power-switch" class="sr-only" />
+          <div class="switch-thumb" id="power-thumb"></div>
+        </div>
+        <span class="text-xs text-zinc-500" id="power-label">OFF / PLAY</span>
+      </label>
+
+      <div class="flex items-center gap-2 ml-auto">
+        <span class="led" id="led-power" title="Power indicator"></span>
+        <span class="text-xs text-zinc-500">Lo-Fi Engine</span>
+        <span class="led" id="led-lofi" title="8-bit processor active"></span>
+      </div>
+    </section>
+
+    <!-- Auto-Rhythm transport -->
+    <section class="sk1-panel px-6 py-4" id="panel-rhythm">
+      <h2 class="panel-title">Auto-Rhythm</h2>
+
+      <div class="flex flex-wrap items-end gap-4 mb-4">
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Pattern</label>
+          <select id="pattern-select" class="sk1-select" disabled>
+            <!-- Populated by app.js -->
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-zinc-500">Tempo</span>
+          <button type="button" id="tempo-down" class="sk1-btn" disabled aria-label="Tempo down">−</button>
+          <span id="tempo-display" class="tempo-readout">120</span>
+          <button type="button" id="tempo-up" class="sk1-btn" disabled aria-label="Tempo up">+</button>
+        </div>
+
+        <div class="flex items-center gap-2 ml-auto">
+          <button type="button" id="rhythm-start" class="sk1-btn sk1-btn-accent" disabled>Start</button>
+          <button type="button" id="fill-in" class="sk1-btn" disabled>Fill-In</button>
+        </div>
+      </div>
+
+      <!-- 16-step playhead grid -->
+      <div class="mb-2">
+        <div class="flex items-center gap-1 mb-1">
+          <span class="text-xs text-zinc-500 w-8">Step</span>
+          <div class="step-grid flex-1" id="step-grid">
+            <!-- 16 step LEDs -->
+          </div>
+        </div>
+        <div class="flex items-center gap-1">
+          <span class="text-xs text-zinc-600 w-8"></span>
+          <div class="step-grid flex-1 text-xs text-zinc-600 flex justify-between px-0.5">
+            <span>1</span><span></span><span></span><span></span>
+            <span>2</span><span></span><span></span><span></span>
+            <span>3</span><span></span><span></span><span></span>
+            <span>4</span>
+          </div>
+        </div>
+      </div>
+
+      <p id="rhythm-status" class="text-xs text-zinc-500">Select a pattern and press Start</p>
+    </section>
+
+    <!-- Drum audition pads -->
+    <section class="sk1-panel px-6 py-4" id="panel-drums">
+      <h2 class="panel-title">Drum Voices — Manual Test</h2>
+
+      <div class="grid grid-cols-3 sm:grid-cols-7 gap-2 mb-4" id="drum-pads">
+        <!-- Populated by app.js -->
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 text-xs text-zinc-400">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="lofi-bypass" />
+          Bypass 8-bit crunch (A/B compare)
+        </label>
+        <span id="engine-info" class="text-zinc-600">—</span>
+      </div>
+    </section>
+
+    <!-- Melody: Step Sequencer / Arpeggiator -->
+    <section class="sk1-panel px-6 py-4" id="panel-melody">
+      <h2 class="panel-title">Step Sequencer / Arpeggiator</h2>
+
+      <div class="flex flex-wrap items-end gap-3 mb-3">
+        <div class="mode-toggle" role="group" aria-label="Melody mode">
+          <button type="button" id="mode-sequencer" class="sk1-btn mode-btn is-selected" disabled>Sequencer</button>
+          <button type="button" id="mode-arpeggiator" class="sk1-btn mode-btn" disabled>Arpeggiator</button>
+        </div>
+
+        <button type="button" id="melody-start" class="sk1-btn sk1-btn-accent" disabled>Play Melody</button>
+        <button type="button" id="melody-clear" class="sk1-btn" disabled>Clear</button>
+
+        <span id="melody-status" class="text-xs text-zinc-500 ml-auto">F3–C6 · max 4 notes/step</span>
+      </div>
+
+      <!-- Arpeggiator controls (visible in arp mode) -->
+      <div id="arp-controls" class="arp-controls hidden flex flex-wrap items-end gap-3 mb-3">
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Root</label>
+          <select id="arp-root" class="sk1-select" disabled></select>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Scale</label>
+          <select id="arp-scale" class="sk1-select" disabled>
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+            <option value="pentatonic">Pentatonic</option>
+            <option value="blues">Blues</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Direction</label>
+          <select id="arp-direction" class="sk1-select" disabled>
+            <option value="up">Up</option>
+            <option value="down">Down</option>
+            <option value="updown">Up-Down</option>
+            <option value="random">Random</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-zinc-500 block mb-1">Rate</label>
+          <select id="arp-rate" class="sk1-select" disabled>
+            <option value="16th">1/16 (tempo)</option>
+            <option value="8th">1/8 (tempo)</option>
+            <option value="4th">1/4 (tempo)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Pitch × step grid -->
+      <div class="seq-grid-wrap">
+        <div class="seq-grid-header">
+          <span class="seq-label-col"></span>
+          <div class="seq-steps-header" id="melody-steps-header"></div>
+        </div>
+        <div class="seq-grid-body" id="melody-grid">
+          <!-- Built by app.js -->
+        </div>
+      </div>
+    </section>
+
+    <section class="sk1-panel px-6 py-4 opacity-50 pointer-events-none" aria-disabled="true">
+      <h2 class="panel-title">Preset Tones &amp; Synthesizing</h2>
+      <p class="text-xs text-zinc-500">Coming in a later step</p>
+      <div class="h-16 mt-2 rounded bg-zinc-800/50 border border-zinc-700/50"></div>
+    </section>
+
+    <footer class="px-6 py-3 text-center text-xs text-zinc-600">
+      8-bit PCM @ 9.34 kHz · 4-voice poly · Hybrid drum driver (<code>SYNTH</code> mode)
+    </footer>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
